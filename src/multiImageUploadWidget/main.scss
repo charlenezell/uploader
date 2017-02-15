@@ -1,0 +1,142 @@
+.multiImageUploadWidget {
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 650px;
+        }
+
+        .multiImageUploadWidget__header {
+            background-color: #3399CC;
+            color: #fff;
+            font-size: 18px;
+            line-height: 30px;
+            padding: 0 10px;
+            position: relative;
+        }
+
+        .multiImageUploadWidget__header__closebtn {
+            cursor: pointer;
+            position: absolute;
+            right: 5px;
+            top: 0;
+            font-size: 32px;
+            font-family: "Arial";
+        }
+
+        .multiImageUploadWidget__ctrls {
+            text-align: center;
+            font-size: 0;
+        }
+
+        .multiImageUploadWidget__ctrls input {
+            display: inline-block;
+            font-size: 14px;
+            margin: 0 10px;
+        }
+
+        .multiImageUploadWidget__preview {
+            margin: 5px 0;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .multiImageUploadWidget__item {
+            margin: 0 4px 8px;
+            float: left;
+            border: 1px solid #D7D7D7;
+            background-color: #F7F7F7;
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+         .multiImageUploadWidget__item__table{
+            width:120px;
+            height:120px;
+        }
+        .multiImageUploadWidget__item__table td{
+            border:0;
+        }
+
+        .multiImageUploadWidget__items__closebtn {
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: #3399CC;
+            color: #fff;
+            font-family: "Arial";
+        }
+
+        .multiImageUploadWidget__item img {
+            display: inline-block;
+            max-width: 120px;
+            max-height: 120px;
+            _width: 120px;
+            _height: 120px;
+        }
+
+        .multiImageUploadWidget__uploadBtn {
+            background-image: url("./resource/icon01.png");
+            background-repeat: no-repeat;
+            background-position: center 20%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .multiImageUploadWidget__uploadCtrl__info {
+            padding-top: 50%;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .multiImageUploadWidget__uploadBtnState__n {
+            color: #FD4D4D;
+            font-family: "Arial";
+        }
+
+        .multiImageUploadWidget__uploadCtrl {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left:0;top:0;
+        }
+
+        .multiImageUploadWidget__item--normal {}
+
+        .multiImageUploadWidget__itemTips {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            color: #fff;
+            text-align: center;
+            width: 100%;
+        }
+
+        .multiImageUploadWidget__itemTips--info {
+            background:black;
+
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .multiImageUploadWidget__itemTips--error {
+             background:red;
+
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        .multiImageUploadWidget__itemTips--success {
+             background:green;
+
+            background: rgba(0, 255, 0, 0.5);
+        }
+
+        .webuploader-pick {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: none;
+            padding: 0;
+        }
