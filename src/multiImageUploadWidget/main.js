@@ -1,4 +1,4 @@
-import WebUploader from '../../node_modules/webuploader';
+import WebUploader from '../../node_modules/webuploader/dist/webuploader';
 import css from './main.scss';
 let defaultObj = {
     cancelHandler: function () {

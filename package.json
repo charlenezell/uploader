@@ -6,9 +6,7 @@
   "scripts": {
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
-    "test": "mocha --compilers js:babel-core/register --colors ./test/*.spec.js",
-    "test:watch": "mocha --compilers js:babel-core/register --colors -w ./test/*.spec.js",
-    "debug": "node --nolazy --debug-brk=5858 d.js"
+    "serve": "lite-server"
   },
   "devDependencies": {
     "babel": "6.5.2",
@@ -24,7 +22,7 @@
     "eslint": "1.7.2",
     "eslint-loader": "1.6.1",
     "file-loader": "^0.10.0",
-    "mocha": "2.3.4",
+    "lite-server": "^2.2.2",
     "node-sass": "^4.5.0",
     "sass-loader": "^6.0.0",
     "shim4webpack": "0.0.2",

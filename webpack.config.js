@@ -29,7 +29,7 @@ const config = {
     library: libraryName,
     libraryTarget: 'umd',
     umdNamedDefine: true,
-    publicPath: "http://mynoden.100bt.com/zellnote/uploaderplayground2/lib/"
+    publicPath: "http://mynoden.100bt.com/uploader/lib/"
   },
   module: {
     rules: [{
@@ -60,6 +60,9 @@ const config = {
     ]
   },
   resolve: {
+    alias: {
+         "jquery":"empty"
+    },
     modules: [path.resolve('./src')],
     extensions: ['.json', '.js']
   },
