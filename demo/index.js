@@ -5,6 +5,9 @@ $("#multiimgwidget").multiImageUploadWidget({
     sureHandler:function(currentData){
         console.log("sureOverride");
         console.log(currentData);
+        $("body").append(currentData.map(function(v){
+            return `<img src="${v}"/>`
+        }))
     },
     cancelHandler:function(){
         console.log("cancelOverride");
@@ -15,6 +18,7 @@ $("#multiimgwidget").multiImageUploadWidget({
         //与webuploader参数一致
         server: "http://qq.100bt.com/uploadImage.action",
         fileVal: "picdata",
+        withCredentials:true,
         accept: {
             title: 'Images',
             extensions: 'gif,jpg,jpeg,bmp,png',
