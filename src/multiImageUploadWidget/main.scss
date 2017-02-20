@@ -1,7 +1,7 @@
 .multiImageUploadWidget {
             border: 1px solid #ccc;
             padding: 5px;
-            width: 650px;
+            width: 677px;
         }
 
         .multiImageUploadWidget__header {
@@ -25,27 +25,36 @@
         .multiImageUploadWidget__ctrls {
             text-align: center;
             font-size: 0;
+            margin:20px 0;
         }
 
         .multiImageUploadWidget__ctrls input {
-            display: inline-block;
-            font-size: 14px;
-            margin: 0 10px;
+                display: inline-block;
+                font-size: 18px;
+                margin: 0 10px;
+                font-family: "Microsoft Yahei";
+                cursor:pointer;
+                background-color: #5AA2D7;
+                color: #fff;
+                padding: 5px 10px;
+                border: 0;
         }
 
         .multiImageUploadWidget__preview {
             margin: 5px 0;
             overflow: hidden;
             text-align: center;
+            height: 265px;
         }
 
         .multiImageUploadWidget__item {
-            margin: 0 4px 8px;
+            margin: 0 6px 8px;
             float: left;
             border: 1px solid #D7D7D7;
             background-color: #F7F7F7;
             width: 120px;
             height: 120px;
+            display:inline;
             position: relative;
         }
          .multiImageUploadWidget__item__table{
@@ -58,14 +67,16 @@
 
         .multiImageUploadWidget__items__closebtn {
             cursor: pointer;
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 20px;
-            height: 20px;
-            background: #3399CC;
-            color: #fff;
-            font-family: "Arial";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: #3399CC;
+    color: #fff;
+    font-family: "Arial";
+    font-size: 16px;
+    line-height: 20px;
         }
 
         .multiImageUploadWidget__item img {

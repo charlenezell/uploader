@@ -29,7 +29,7 @@ const config = {
     library: libraryName,
     libraryTarget: 'umd',
     umdNamedDefine: true,
-    publicPath: "http://mynoden.100bt.com/uploader/lib/"
+    publicPath: "http://resource.a0bi.com/resource/js/plugins/g/uploader/"
   },
   module: {
     rules: [{
@@ -39,8 +39,7 @@ const config = {
       },
       {
         test: /\.css$/,
-        loaders: ["style-loader", "css-loader"],
-        exclude: /(node_modules|bower_components)/
+        loaders: ["style-loader", "css-loader?sourceMap"]
       },
       {
         test: /\.scss/,

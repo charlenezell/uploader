@@ -1,9 +1,8 @@
 import WebUploader from '../../node_modules/webuploader/dist/webuploader';
+import wuCss from '../../node_modules/webuploader/dist/webuploader.css';
 import css from './main.scss';
+
 let defaultObj = {
-    cancelHandler: function () {
-        console.log("cancel");
-    },
     closeHandler: function () {
         console.log("close");
     },
@@ -20,8 +19,11 @@ function MultiImageUploadWidget(option) {
     this.mc = $({});
     this.uploaderOption = uploaderOption;
     let wlist = [
-        "sureHandler", "cancelHandler", "closeHandler", "container", , "maxItems"
+        "sureHandler", "closeHandler", "container", , "maxItems"
     ];
+    if(option.onUploadSuccess){
+        this.onUploadSuccess=option.onUploadSuccess;
+    }
     this.maxItems = 3;
     this.fileCount = 0;
     $.each(wlist, (k, v) => {
@@ -32,7 +34,22 @@ function MultiImageUploadWidget(option) {
     this.init();
 }
 $.extend(MultiImageUploadWidget.prototype, {
-
+    onUploadSuccess:function(response){
+        //实现一个接口成功返回url否则返回空串
+        if(response.state!=='SUCCESS'){
+            return {
+                code:-1,
+                detail:response.state,
+                url:''
+            };
+        }else{
+            return {
+                code:0,
+                detail:"上传成功",
+                url:response.allUrls.NORMAL
+            };
+        }
+    },
     init: function () {
 
         this.insertFrameHtml();
@@ -51,6 +68,7 @@ $.extend(MultiImageUploadWidget.prototype, {
         this.uploader = WebUploader.create({
             pick: $(".multiImageUploadWidget__uploadCtrl", this.$addBtn),
             fileNumLimit: this.maxItems,
+            duplicate:true,
             ...this.uploaderOption
         });
         this.uploader.onFileDequeued = function (file) {
@@ -70,7 +88,7 @@ $.extend(MultiImageUploadWidget.prototype, {
                     } else if (cur === 'progress') {
                         this.itemShowInfo(dom, '上传中');
                     } else if (cur === 'complete') {
-                        this.itemShowSuccess(dom, '上传成功');
+
                     }
                 });
             });
@@ -84,8 +102,24 @@ $.extend(MultiImageUploadWidget.prototype, {
         }
         this.uploader.onUploadSuccess = (file, response) => {
             // console.log("onUploadSuccess");
+            let {
+                code,
+                detail,
+                url
+            }=this.onUploadSuccess(response);
             let dom=this.$listContainer.find(".multiImageUploadWidget__item[data-fileid='"+file.id+"']");
-            dom.data("fileurl",response.url);
+            if(code==0){
+                this.itemShowSuccess(dom,detail);
+            }else{
+                this.itemShowError(dom,detail);
+            }
+            if($.trim(url)){
+                dom.data("fileurl",url);
+            }else{
+                dom.data("fileurl",'');
+            }
+
+
         }
         this.uploader.onUploadError = () => {
             // console.log("onUploadError");
@@ -133,7 +167,7 @@ $.extend(MultiImageUploadWidget.prototype, {
                 </span>
                 `);
             }
-            this.$listContainer.prepend(ins);
+            this.$listContainer.find(".multiImageUploadWidget__uploadBtn").before(ins);
             ins.data("multiImageUploadWidget_file", file);
             d.resolve(ins);
         },120,120);
@@ -169,8 +203,8 @@ $.extend(MultiImageUploadWidget.prototype, {
                     ${this.getAddBtn()}
                 </div>
                 <div class="multiImageUploadWidget__ctrls">
-                    <input class="multiImageUploadWidget__ctrls__upload" type="button" value="上传" />
-                    <input class="multiImageUploadWidget__ctrls__sure" type="button" value="确定" /><input type="button" value="取消" class="multiImageUploadWidget__ctrls__cancel"/>
+                    <input class="multiImageUploadWidget__ctrls__btn multiImageUploadWidget__ctrls__upload" type="button" value="上传" />
+                    <input class="multiImageUploadWidget__ctrls__btn multiImageUploadWidget__ctrls__sure" type="button" value="确定" />
                 </div>
             </div>
         `);
@@ -180,7 +214,7 @@ $.extend(MultiImageUploadWidget.prototype, {
     _sureHandler: function () {
         if (this.sureHandler) {
             this.sureHandler($.map(this.$listContainer.find(".multiImageUploadWidget__item").filter((k,v)=>{
-                return $(v).data("fileurl")?true:false;
+                return $(v).data("fileurl")!==''?true:false;
             }),function(v,k){
                 return $(v).data("fileurl");
             }));
@@ -190,9 +224,6 @@ $.extend(MultiImageUploadWidget.prototype, {
         //componentEvent
         this.mc.on("multiImageUploadWidget_sure", () => {
             this._sureHandler();
-        });
-        this.mc.on("multiImageUploadWidget_cancel", () => {
-            this.cancelHandler();
         });
         this.mc.on("multiImageUploadWidget_close", () => {
             this.closeHandler();
@@ -213,9 +244,6 @@ $.extend(MultiImageUploadWidget.prototype, {
         });
         this.container.on("click", ".multiImageUploadWidget__ctrls__sure", () => {
             this.mc.trigger("multiImageUploadWidget_sure");
-        });
-        this.container.on("click", ".multiImageUploadWidget__ctrls__cancel", () => {
-            this.mc.trigger("multiImageUploadWidget_cancel");
         });
         this.container.on("click", ".multiImageUploadWidget__ctrls__upload", () => {
             this.mc.trigger("multiImageUploadWidget_upload");
