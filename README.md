@@ -1,4 +1,9 @@
-# 此处引入webuploader.js而不采用npm包的默认的webuploader.fis.js差异应该如下:
+# 读我
+
+## 说明
+
+此处引入webuploader.js而不采用npm包的默认的webuploader.fis.js差异应该如下:
+
 ```javascript
            fis: {
                 name: 'webuploader',
@@ -23,6 +28,26 @@
                 }
             }
 ```
+
 初步看是构建时候引入不一样的输入方式和输出方式还有是否对dollar实现
 
 然后内部有define(["jquery"])然后就在resolve里面解析为一个全局的jquery对象
+
+
+## setup
+
+```shell
+npm i
+```
+
+## dev
+
+```shell
+npm run dev
+```
+
+## build
+
+```shell
+npm run dev
+```

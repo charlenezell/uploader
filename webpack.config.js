@@ -29,7 +29,7 @@ const config = {
     library: libraryName,
     libraryTarget: 'umd',
     umdNamedDefine: true,
-    publicPath: "http://resource.a0bi.com/resource/js/plugins/g/uploader/"
+    publicPath: "http://resource.a0bi.com/resource/js/plugins/g/uploader/lib/"
   },
   module: {
     rules: [{
@@ -55,6 +55,15 @@ const config = {
           outputPath: ''
         },
         exclude: /(node_modules|bower_components)/
+      },
+      {
+        test: /\.(swf)$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10,
+          name: 'swf/[name].[ext]?[sha256:hash:8]',
+          outputPath: ''
+        }
       }
     ]
   },

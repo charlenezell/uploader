@@ -1,15 +1,38 @@
 import WebUploader from '../../node_modules/webuploader/dist/webuploader';
 import wuCss from '../../node_modules/webuploader/dist/webuploader.css';
 import css from './main.scss';
+import swf from '../../node_modules/webuploader/dist/Uploader.swf';
+import extend from '../../node_modules/extend';
+import emiter from  '../../node_modules/wolfy87-eventemitter';
 
+// 除了基本的$selector之外还依赖了$的个方法map,each,trim,Deferred;
 let defaultObj = {
     closeHandler: function () {
         console.log("close");
     },
     sureHandler: function (data) {
         console.log("sure", data);
+    },
+    maxItems: 3,
+    fileCount: 0,
+    onUploadSuccess: function (response) {
+        //输入是一个后端返回给用户自定义响应的图片url位置和如何给ui去响应两个状态成功返回0，否则返回负值
+        // 实现一个接口成功返回url否则返回空串
+        if (response.state !== 'SUCCESS') {
+            return {
+                code: -1,
+                detail: response.state,
+                url: ''
+            };
+        } else {
+            return {
+                code: 0,
+                detail: "上传成功",
+                url: response.allUrls.NORMAL
+            };
+        }
     }
-}
+};
 
 function MultiImageUploadWidget(option) {
     let {
@@ -17,44 +40,32 @@ function MultiImageUploadWidget(option) {
     } = option;
 
     this.mc = $({});
+
     this.uploaderOption = uploaderOption;
+
+    // 扩展默认值
+    extend(this, defaultObj);
+
+    // 供用户扩展的属性
     let wlist = [
-        "sureHandler", "closeHandler", "container", , "maxItems"
+        "sureHandler", "closeHandler", "container", "maxItems", 'onUploadSuccess'
     ];
-    if(option.onUploadSuccess){
-        this.onUploadSuccess=option.onUploadSuccess;
-    }
-    this.maxItems = 3;
-    this.fileCount = 0;
+
+    // 扩展用户定义值
     $.each(wlist, (k, v) => {
         if (v !== "uploadOption") {
-            this[v] = option[v] || defaultObj[v];
+            this[v] = option[v]
         }
     });
     this.init();
 }
-$.extend(MultiImageUploadWidget.prototype, {
-    onUploadSuccess:function(response){
-        //实现一个接口成功返回url否则返回空串
-        if(response.state!=='SUCCESS'){
-            return {
-                code:-1,
-                detail:response.state,
-                url:''
-            };
-        }else{
-            return {
-                code:0,
-                detail:"上传成功",
-                url:response.allUrls.NORMAL
-            };
-        }
-    },
+MultiImageUploadWidget.prototype=new emiter;
+extend(MultiImageUploadWidget.prototype, {
     init: function () {
-
         this.insertFrameHtml();
         this.bindEvt();
     },
+    // ui 提示方法
     itemShowError: function (container, info) {
         $(container).find(".multiImageUploadWidget__itemTips").hide().filter(".multiImageUploadWidget__itemTips--error").show().text(info);
     },
@@ -64,16 +75,16 @@ $.extend(MultiImageUploadWidget.prototype, {
     itemShowSuccess: function (container, info) {
         $(container).find(".multiImageUploadWidget__itemTips").hide().filter(".multiImageUploadWidget__itemTips--success").show().text(info);
     },
+    // ui 提示方法
     initUploader: function () {
+        // 绑定webuploader API
         this.uploader = WebUploader.create({
             pick: $(".multiImageUploadWidget__uploadCtrl", this.$addBtn),
             fileNumLimit: this.maxItems,
-            duplicate:true,
+            duplicate: true,
             ...this.uploaderOption
         });
-        this.uploader.onFileDequeued = function (file) {
-            // removeFile(file);
-        };
+
         this.uploader.onFileQueued = (file) => {
             this.fileCount++;
             this.updateAddBtnState();
@@ -94,47 +105,33 @@ $.extend(MultiImageUploadWidget.prototype, {
             });
         };
 
-        this.uploader.onUploadProgress = () => {
-            // console.log("onUploadProgress");
-        }
-        this.uploader.onUploadFinished = () => {
-            // console.log("onUploadFinished");
-        }
         this.uploader.onUploadSuccess = (file, response) => {
-            // console.log("onUploadSuccess");
             let {
                 code,
                 detail,
                 url
-            }=this.onUploadSuccess(response);
-            let dom=this.$listContainer.find(".multiImageUploadWidget__item[data-fileid='"+file.id+"']");
-            if(code==0){
-                this.itemShowSuccess(dom,detail);
-            }else{
-                this.itemShowError(dom,detail);
+            } = this.onUploadSuccess(response);
+            let dom = this.$listContainer.find(".multiImageUploadWidget__item[data-fileid='" + file.id + "']");
+            if (code == 0) {
+                this.itemShowSuccess(dom, detail);
+            } else {
+                this.itemShowError(dom, detail);
             }
-            if($.trim(url)){
-                dom.data("fileurl",url);
-            }else{
-                dom.data("fileurl",'');
+            if ($.trim(url)) {
+                dom.data("fileurl", url);
+            } else {
+                dom.data("fileurl", '');
             }
 
 
         }
-        this.uploader.onUploadError = () => {
+        this.uploader.onUploadError = (file, reason) => {
             // console.log("onUploadError");
+            let dom = this.$listContainer.find(".multiImageUploadWidget__item[data-fileid='" + file.id + "']");
+            this.itemShowError(dom, reason);
         }
-        this.uploader.onUploadComplete = () => {
-            // console.log("onUploadComplete");
-        }
-        this.uploader.onUploadStart = () => {
-            // console.log("onUploadStart");
-        }
-        this.updateAddBtnState();
-    },
 
-    singleFileUploadSuccess: function (...arg) {
-        console.log(arg);
+        this.updateAddBtnState();
     },
     initSingleUploadButtonWidgetList: function () {
         this.$listContainer.find(".multiImageUploadWidget__item--normal").remove();
@@ -142,6 +139,15 @@ $.extend(MultiImageUploadWidget.prototype, {
         this.$addBtnState = $(".multiImageUploadWidget__uploadBtnState", this.$listContainer);
         this.initUploader();
     },
+    // 用户删除ui时候响应
+    removeItem: function (targetItem) {
+        let file = $(targetItem).data("multiImageUploadWidget_file");
+        this.uploader.removeFile(file);
+        $(targetItem).remove();
+        this.fileCount--;
+        this.updateAddBtnState();
+    },
+    // enqueue 的时候生成预览的ui
     addFile: function (file) {
         let d = $.Deferred();
         this.uploader.makeThumb(file, (err, ret) => {
@@ -170,15 +176,8 @@ $.extend(MultiImageUploadWidget.prototype, {
             this.$listContainer.find(".multiImageUploadWidget__uploadBtn").before(ins);
             ins.data("multiImageUploadWidget_file", file);
             d.resolve(ins);
-        },120,120);
+        }, 120, 120);
         return d;
-    },
-    judgeAddBtnState: function () {
-          if (this.fileCount < this.maxItems) {
-            this.$addBtn.removeClass("webuploader-element-invisible")
-        } else {
-            this.$addBtn.addClass("webuploader-element-invisible")
-        }
     },
     getAddBtn: function () {
         return `<div class="multiImageUploadWidget__item multiImageUploadWidget__uploadBtn">
@@ -189,10 +188,13 @@ $.extend(MultiImageUploadWidget.prototype, {
     },
     updateAddBtnState: function () {
         this.$addBtnState.html(`还可以上传<span class="multiImageUploadWidget__uploadBtnState__n">${this.maxItems-this.fileCount}</span>个`);
-        this.judgeAddBtnState();
+        if (this.fileCount < this.maxItems) {
+            this.$addBtn.removeClass("webuploader-element-invisible")
+        } else {
+            this.$addBtn.addClass("webuploader-element-invisible")
+        }
     },
-    removeItem: function () {},
-    addItem: function () {},
+    // 注入静态的html框架
     insertFrameHtml: function () {
         this.container.html(`
             <div class="multiImageUploadWidget">
@@ -211,45 +213,38 @@ $.extend(MultiImageUploadWidget.prototype, {
         this.$listContainer = $(".multiImageUploadWidget__preview", this.container);
         this.initSingleUploadButtonWidgetList();
     },
-    _sureHandler: function () {
-        if (this.sureHandler) {
-            this.sureHandler($.map(this.$listContainer.find(".multiImageUploadWidget__item").filter((k,v)=>{
-                return $(v).data("fileurl")!==''?true:false;
-            }),function(v,k){
-                return $(v).data("fileurl");
-            }));
-        }
-    },
     bindEvt: function () {
         //componentEvent
-        this.mc.on("multiImageUploadWidget_sure", () => {
-            this._sureHandler();
+        this.on("multiImageUploadWidget_sure", () => {
+            if (this.sureHandler) {
+                this.sureHandler($.map(this.$listContainer.find(".multiImageUploadWidget__item").filter((k, v) => {
+                    return $(v).data("fileurl") !== '' ? true : false;
+                }), function (v, k) {
+                    return $(v).data("fileurl");
+                }));
+            }
         });
-        this.mc.on("multiImageUploadWidget_close", () => {
+        this.on("multiImageUploadWidget_close", () => {
             this.closeHandler();
         });
-        this.mc.on("multiImageUploadWidget_upload", () => {
+        this.on("multiImageUploadWidget_upload", () => {
             this.uploader.upload();
         });
-        this.mc.on("multiImageUploadWidget_removeItem", (e, targetItem) => {
-            let file = $(targetItem).data("multiImageUploadWidget_file");
-            this.uploader.removeFile(file);
-            $(targetItem).remove();
-            this.fileCount--;
-            this.updateAddBtnState();
+        this.on("multiImageUploadWidget_removeItem", (e, targetItem) => {
+            this.removeItem(targetItem);
         });
         //domEvent
         this.container.on("click", ".multiImageUploadWidget__header__closebtn", () => {
-            this.mc.trigger("multiImageUploadWidget_close");
+            this.trigger("multiImageUploadWidget_close");
         });
         this.container.on("click", ".multiImageUploadWidget__ctrls__sure", () => {
-            this.mc.trigger("multiImageUploadWidget_sure");
+            this.trigger("multiImageUploadWidget_sure");
         });
         this.container.on("click", ".multiImageUploadWidget__ctrls__upload", () => {
-            this.mc.trigger("multiImageUploadWidget_upload");
+            this.trigger("multiImageUploadWidget_upload");
         });
         this.container.on("click", ".multiImageUploadWidget__items__closebtn", (e) => {
-            this.mc.trigger("multiImageUploadWidget_removeItem", $(e.target).closest(".multiImageUploadWidget__item"));
+            this.trigger("multiImageUploadWidget_removeItem", $(e.target).closest(".multiImageUploadWidget__item"));
         })
     }
 });

@@ -51,6 +51,8 @@
   },
   "homepage": "https://github.com/krasimir/webpack-library-starter",
   "dependencies": {
-    "webuploader": "^0.1.8"
+    "extend": "^3.0.0",
+    "webuploader": "^0.1.8",
+    "wolfy87-eventemitter": "^5.1.0"
   }
 }

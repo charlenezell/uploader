@@ -25,6 +25,7 @@ if (!Array.prototype.filter){
         return res;
     };
 }
+//注入jquery
 let MultiImageUploadWidget = require("./multiImageUploadWidget/main");
 $.fn.multiImageUploadWidget = function (option) {
     this.each(function (k, v) {
