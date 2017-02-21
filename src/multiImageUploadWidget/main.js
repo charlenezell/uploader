@@ -4,7 +4,7 @@ import css from './main.scss';
 import swf from '../../node_modules/webuploader/dist/Uploader.swf';
 import extend from '../../node_modules/extend';
 import emiter from  '../../node_modules/wolfy87-eventemitter';
-
+import previewimg from './resource/nosupportpreview.jpg';
 // 除了基本的$selector之外还依赖了$的个方法map,each,trim,Deferred;
 let defaultObj = {
     closeHandler: function () {
@@ -80,13 +80,20 @@ extend(MultiImageUploadWidget.prototype, {
     // ui 提示方法
     initUploader: function () {
         // 绑定webuploader API
-        this.uploader = WebUploader.create({
+
+            this.uploader = WebUploader.create({
             pick: $(".multiImageUploadWidget__uploadCtrl", this.$addBtn),
             fileNumLimit: this.maxItems,
             duplicate: true,
             ...this.uploaderOption
         });
-
+        this.uploader.onError=(...arg)=>{
+            // console.log(arg);
+            var [type,maxSize,{name,size}]=arg;
+            if(type=="F_EXCEED_SIZE"){
+                alert(`文件${name}大小为${size/1024/1024}m,超过单个最大大小${maxSize/1024/1024}m`);
+            }
+        }
         this.uploader.onFileQueued = (file) => {
             this.fileCount++;
             this.updateAddBtnState();
@@ -134,6 +141,8 @@ extend(MultiImageUploadWidget.prototype, {
         }
 
         this.updateAddBtnState();
+
+
     },
     initSingleUploadButtonWidgetList: function () {
         this.$listContainer.find(".multiImageUploadWidget__item--normal").remove();
@@ -167,7 +176,7 @@ extend(MultiImageUploadWidget.prototype, {
             } else {
                 ins = $(`
                  <span class="multiImageUploadWidget__item multiImageUploadWidget__item--normal" data-fileid="${file.id}">
-                    <img src="" id="" alt="不能预览" />
+                    <img src="${previewimg}" id="" alt="不能预览" />
                     <span class="multiImageUploadWidget__items__closebtn">×</span>
                     <span class="multiImageUploadWidget__itemTips multiImageUploadWidget__itemTips--error"></span>
                     <span class="multiImageUploadWidget__itemTips  multiImageUploadWidget__itemTips--success"></span>
@@ -196,6 +205,22 @@ extend(MultiImageUploadWidget.prototype, {
             this.$addBtn.addClass("webuploader-element-invisible")
         }
     },
+    getFlashVersion:function(){
+            var version;
+            try {
+                version = navigator.plugins[ 'Shockwave Flash' ];
+                version = version.description;
+            } catch ( ex ) {
+                try {
+                    version = new ActiveXObject('ShockwaveFlash.ShockwaveFlash')
+                            .GetVariable('$version');
+                } catch ( ex2 ) {
+                    version = '0.0';
+                }
+            }
+            version = version.match( /\d+/g );
+            return parseFloat( version[ 0 ] + '.' + version[ 1 ], 10 );
+    },
     // 注入静态的html框架
     insertFrameHtml: function () {
         this.container.html(`
@@ -208,12 +233,19 @@ extend(MultiImageUploadWidget.prototype, {
                 </div>
                 <div class="multiImageUploadWidget__ctrls">
                     <input class="multiImageUploadWidget__ctrls__btn multiImageUploadWidget__ctrls__upload" type="button" value="上传" />
-                    <input class="multiImageUploadWidget__ctrls__btn multiImageUploadWidget__ctrls__sure" type="button" value="确定" />
+                    <input class="multiImageUploadWidget__ctrls__btn multiImageUploadWidget__ctrls__sure" type="button" value="插入" />
                 </div>
             </div>
         `);
         this.$listContainer = $(".multiImageUploadWidget__preview", this.container);
-        this.initSingleUploadButtonWidgetList();
+        try{
+            this.initSingleUploadButtonWidgetList();
+        }catch(e){
+            $(".multiImageUploadWidget__preview").html(`<p>初始化失败，请带上下面信息联系管理员</p><p>ua:${navigator.userAgent},flash:${this.getFlashVersion()}</p>
+            <p>上传功能只支持ie6及以上flash版本>=11.4或者支持h5的现代浏览器</p>
+            `);
+            $(".multiImageUploadWidget__ctrls").hide();
+        }
     },
     bindEvt: function () {
         //componentEvent
@@ -232,7 +264,8 @@ extend(MultiImageUploadWidget.prototype, {
         this.on("multiImageUploadWidget_upload", () => {
             this.uploader.upload();
         });
-        this.on("multiImageUploadWidget_removeItem", (e, targetItem) => {
+        this.on("multiImageUploadWidget_removeItem", ( targetItem) => {
+
             this.removeItem(targetItem);
         });
         //domEvent
