@@ -39,7 +39,7 @@ function MultiImageUploadWidget(option) {
         uploaderOption
     } = option;
 
-    this.mc = $({});
+
 
     this.uploaderOption = uploaderOption;
 
@@ -54,7 +54,9 @@ function MultiImageUploadWidget(option) {
     // 扩展用户定义值
     $.each(wlist, (k, v) => {
         if (v !== "uploadOption") {
-            this[v] = option[v]
+             if(option[v]!==void(0)){
+             this[v] = option[v]
+            }
         }
     });
     this.init();
