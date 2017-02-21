@@ -48,7 +48,7 @@ function MultiImageUploadWidget(option) {
 
     // 供用户扩展的属性
     let wlist = [
-        "sureHandler", "closeHandler", "container", "maxItems", 'onUploadSuccess'
+        "sureHandler", "closeHandler", "container", "maxItems", 'onUploadSuccess','fileSingleSizeLimit'
     ];
 
     // 扩展用户定义值
@@ -80,24 +80,25 @@ extend(MultiImageUploadWidget.prototype, {
     // ui 提示方法
     initUploader: function () {
         // 绑定webuploader API
-
+            this.uploaderOption.fileSingleSizeLimit&&delete this.uploaderOption.fileSingleSizeLimit;//移除部分不想传入的参数由外部控件做特殊支持
             this.uploader = WebUploader.create({
             pick: $(".multiImageUploadWidget__uploadCtrl", this.$addBtn),
             fileNumLimit: this.maxItems,
             duplicate: true,
             ...this.uploaderOption
         });
-        this.uploader.onError=(...arg)=>{
-            // console.log(arg);
-            var [type,maxSize,{name,size}]=arg;
-            if(type=="F_EXCEED_SIZE"){
-                alert(`文件${name}大小为${size/1024/1024}m,超过单个最大大小${maxSize/1024/1024}m`);
-            }
-        }
+        // this.uploader.onError=(...arg)=>{
+        //     // console.log(arg);
+        //     var [type,maxSize,{name,size}]=arg;
+        //     if(type=="F_EXCEED_SIZE"){
+        //         alert(`文件${name}大小为${size/1024/1024}m,超过单个最大大小${maxSize/1024/1024}m`);
+        //     }
+        // }
         this.uploader.onFileQueued = (file) => {
             this.fileCount++;
             this.updateAddBtnState();
             this.addFile(file).then((dom) => {
+
                 file.on('statuschange', (cur, prev) => {
                     if (cur === 'error' || cur === 'invalid') {
                         this.itemShowError(dom, file.statusText);
@@ -109,9 +110,20 @@ extend(MultiImageUploadWidget.prototype, {
                         this.itemShowInfo(dom, '上传中');
                     } else if (cur === 'complete') {
 
+                    }else if(cur==='cancelled'){
+
                     }
                 });
+
+                let {fileSingleSizeLimit}=this;
+            let max = parseInt( fileSingleSizeLimit, 10 );
+            if (file.size>max) {
+                this.uploader.removeFile(file);
+                 let dom = this.$listContainer.find(".multiImageUploadWidget__item[data-fileid='" + file.id + "']");
+                 this.itemShowError(dom,"文件大小需在2m内")
+            }
             });
+
         };
 
         this.uploader.onUploadSuccess = (file, response) => {
